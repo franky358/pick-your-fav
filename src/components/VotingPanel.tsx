@@ -1,65 +1,97 @@
-// src/components/VotingPanel.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../supabaseClient';
 import VoteItem from './VoteItem';
+import { Comparison, Option } from '../types';
 
 const VotingPanel: React.FC = () => {
-  const [comparisons, setComparisons] = useState<Comparison[]>([
-    {
-      id: 1,
-      title: 'Comparison 1',
-      options: [
-        { id: 1, title: 'Option 1', url: 'url-to-image-or-video-1' },
-        { id: 2, title: 'Option 2', url: 'url-to-image-or-video-2' },
-      ],
-      votedOptionId: null,
-    },
-    {
-      id: 2,
-      options: [
-        { id: 3, title: 'Option 3', url: 'url-to-image-or-video-3' },
-        { id: 4, title: 'Option 4', url: 'url-to-image-or-video-4' },
-      ],
-      votedOptionId: null,
-    },
-    {
-      id: 3,
-      title: 'Comparison 3',
-      options: [
-        { id: 5, title: 'Option 5', url: 'url-to-image-or-video-5' },
-        { id: 6, url: 'url-to-image-or-video-6' },
-      ],
-      votedOptionId: null,
-    },
-  ]);
+  const [comparisons, setComparisons] = useState<Comparison[]>([]);
+  const [votes, setVotes] = useState<{ [key: string]: string }>({}); // Guarda los votos del usuario
 
-  const handleVote = (comparisonId: number, optionId: number) => {
-    setComparisons((comparisons) =>
-      comparisons.map((comparison) =>
-        comparison.id === comparisonId
-          ? { ...comparison, votedOptionId: optionId }
-          : comparison
-      )
-    );
-    console.log(`Voted for option with id: ${optionId} in comparison: ${comparisonId}`);
+  useEffect(() => {
+    const fetchComparisons = async () => {
+      const { data: comparisons, error } = await supabase
+        .from('comparisons')
+        .select('*, options(*)');
+      if (error) {
+        console.error(error);
+      } else {
+        setComparisons(comparisons || []);
+      }
+    };
+
+    const fetchVotes = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: votes, error } = await supabase
+        .from('votes')
+        .select('comparison_id, option_id')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error(error);
+      } else {
+        const votesMap = votes.reduce((acc: { [key: string]: string }, vote: any) => {
+          acc[vote.comparison_id] = vote.option_id;
+          return acc;
+        }, {});
+        setVotes(votesMap);
+      }
+    };
+
+    fetchComparisons();
+    fetchVotes();
+  }, []);
+
+  const handleVote = async (comparisonId: string, optionId: string) => {
+  
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      alert('Please log in to vote.');
+      return;
+    }
+
+    // Check if user has already voted for this comparison
+    if (votes[comparisonId]) {
+      alert('You have already voted for this comparison.');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('votes')
+      .insert({ user_id: user.id, comparison_id: comparisonId, option_id: optionId });
+
+    if (error) {
+      console.error(error);
+    } else {
+      setVotes((prev) => ({ ...prev, [comparisonId]: optionId }));
+    }
   };
+
+  console.log(comparisons);
+  console.log(votes);
 
   return (
     <div>
       {comparisons.map((comparison) => {
-        const pairVoted = comparison.votedOptionId !== null;
+        const comparisonIdStr = String(comparison.id);
+        const userVotedOptionId = votes[comparisonIdStr] || null;
+        const pairVoted = userVotedOptionId !== null;
         return (
-          <div key={comparison.id} className="mb-8">
-            {comparison.title && <h2 className="text-2xl mb-4">{comparison.title}</h2>}
+          <div key={comparisonIdStr} className="mb-8">
             <div className="flex flex-col md:flex-row md:space-x-4">
-              {comparison.options.map((option) => (
-                <VoteItem
-                  key={option.id}
-                  item={option}
-                  onVote={() => handleVote(comparison.id, option.id)}
-                  isSelected={comparison.votedOptionId === option.id}
-                  isVotable={!pairVoted}
-                />
-              ))}
+              {(comparison.options || []).map((option: Option) => {
+                const optionIdStr = String(option.id);
+                return (
+                  <VoteItem
+                    key={option.id}
+                    item={option}
+                    onVote={() => handleVote(comparisonIdStr, optionIdStr)}
+                    isSelected={userVotedOptionId === optionIdStr}
+                    isVotable={!pairVoted}
+                  />
+                );
+              })}
             </div>
           </div>
         );

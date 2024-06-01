@@ -10,6 +10,8 @@ import HomePage from './pages/HomePage';
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isEmailConfirmed, setIsEmailConfirmed] = useState<boolean | null>(null);
+  const darkMode= true;
+
   console.log(user);
   console.log(isEmailConfirmed)
 
@@ -25,6 +27,8 @@ function App() {
       }
     };
 
+    
+
     getSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -37,6 +41,14 @@ function App() {
       authListener?.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
 
   if (isEmailConfirmed === null) {
     return <div>Loading...</div>;

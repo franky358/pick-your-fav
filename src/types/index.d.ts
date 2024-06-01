@@ -16,5 +16,8 @@ export interface Comparison {
   votedOptionId?: number | null;
 }
 
-
+export interface VotesResponse {
+  comparison_id: string;
+  option_id: string;
+}
 

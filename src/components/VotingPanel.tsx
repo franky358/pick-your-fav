@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import VoteItem from './VoteItem';
 import { Comparison, Option } from '../types';
+import { VotesResponse } from '../types';
 
 const VotingPanel: React.FC = () => {
   const [comparisons, setComparisons] = useState<Comparison[]>([]);
-  const [votes, setVotes] = useState<{ [key: string]: string }>({}); // Guarda los votos del usuario
+  const [userVotes, setUserVotes] = useState<{ [key: string]: string }>({}); // Guarda los votos del usuario
+  const [allVotes, setAllVotes] =  useState <VotesResponse[]> ([]);
 
   useEffect(() => {
     const fetchComparisons = async () => {
@@ -19,7 +21,7 @@ const VotingPanel: React.FC = () => {
       }
     };
 
-    const fetchVotes = async () => {
+    const fetchUserVotes = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -35,12 +37,28 @@ const VotingPanel: React.FC = () => {
           acc[vote.comparison_id] = vote.option_id;
           return acc;
         }, {});
-        setVotes(votesMap);
+        setUserVotes(votesMap);
       }
     };
 
+    const fetchOptionVotes = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: votes, error } = await supabase
+      .from('votes')
+      .select('comparison_id, option_id')
+
+    if (error) {
+      console.error(error);
+    } else {
+      setAllVotes(votes);
+    }
+
+    }
+
     fetchComparisons();
-    fetchVotes();
+    fetchUserVotes();
+    fetchOptionVotes();
   }, []);
 
   const handleVote = async (comparisonId: string, optionId: string) => {
@@ -52,7 +70,7 @@ const VotingPanel: React.FC = () => {
     }
 
     // Check if user has already voted for this comparison
-    if (votes[comparisonId]) {
+    if (userVotes[comparisonId]) {
       alert('You have already voted for this comparison.');
       return;
     }
@@ -64,32 +82,49 @@ const VotingPanel: React.FC = () => {
     if (error) {
       console.error(error);
     } else {
-      setVotes((prev) => ({ ...prev, [comparisonId]: optionId }));
+      setUserVotes((prev) => ({ ...prev, [comparisonId]: optionId }));
     }
   };
 
-  console.log(comparisons);
-  console.log(votes);
 
   return (
-    <div>
+    <div className='mt-16 px-8'>
       {comparisons.map((comparison) => {
         const comparisonIdStr = String(comparison.id);
-        const userVotedOptionId = votes[comparisonIdStr] || null;
+        const userVotedOptionId = userVotes[comparisonIdStr] || null;
         const pairVoted = userVotedOptionId !== null;
+        const totalVotesComparison = allVotes.filter((vote) => vote.comparison_id === String(comparison.id)).length
+
         return (
-          <div key={comparisonIdStr} className="mb-8">
-            <div className="flex flex-col md:flex-row md:space-x-4">
-              {(comparison.options || []).map((option: Option) => {
+          <div key={comparisonIdStr} className="mb-6 border-b border-slate-800">
+            <div className="flex flex-col md:flex-row ">
+              {(comparison.options || []).map((option: Option, i: number) => {
                 const optionIdStr = String(option.id);
+                const totalVotesOption = allVotes.filter((vote) => vote.option_id === String(option.id)).length
                 return (
+                  <>
+                  <div className={`px-4 ${userVotedOptionId === optionIdStr ? 'mt-4 mb-8' :''} ` }>
                   <VoteItem
                     key={option.id}
                     item={option}
                     onVote={() => handleVote(comparisonIdStr, optionIdStr)}
                     isSelected={userVotedOptionId === optionIdStr}
                     isVotable={!pairVoted}
+                    votesComparison={totalVotesComparison}
+                    optionVotes={totalVotesOption}
                   />
+                  </div>
+                  <div>
+                  {i % 2 === 0 && 
+                  <div className='mt-4 flex justify-center'>
+                    <h1 className='text-white font-bold text-xl '>VS</h1>
+                  </div>}
+              
+                  </div>
+                  </>
+                 
+
+                  
                 );
               })}
             </div>

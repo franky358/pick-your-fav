@@ -1,8 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import VotingPanel from '../components/VotingPanel';
+import { motion } from "framer-motion";
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../supabaseClient';
+import VotingPanel from '../components/VotingPanel';
+import Header from '../components/Header';
+
 
 interface HomePageProps {
   user: User;
@@ -20,26 +23,41 @@ const HomePage: React.FC<HomePageProps> = ({ user }) => {
     }
   };
 
-  console.log(user);
 
   return (
+
     <div className='bg-black'>
-      <main className="py-4 px-6">
+      <Header />
+      <motion.div
+        initial={{ opacity: 0.0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{
+          delay: 0.3,
+          duration: 0.8,
+          ease: "easeInOut",
+        }}
+        className="relative flex flex-col gap-4 items-center justify-center"
+      >
+      <main className="w-full">
         <VotingPanel />
-        <button
+   
+      </main>
+      </motion.div>
+
+      {/* <button
           onClick={() => navigate('/upload')}
           className="bg-blue-500 text-white p-2 rounded mt-4"
         >
           Crear Nueva Comparación
         </button>
-      </main>
       <button
             onClick={handleLogout}
             className="bg-red-500 text-white p-2 rounded"
           >
             Cerrar Sesión
-      </button>
+      </button> */}
     </div>
+     
   );
 };
 

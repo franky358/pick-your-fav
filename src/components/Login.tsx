@@ -71,7 +71,7 @@ const Login: React.FC = () => {
             type="submit"
             disabled={loading}
           >
-            {loading ? 'Loading...' : 'Iniciar sesión'}
+            {loading ? 'Entrando...' : 'Iniciar sesión'}
             <BottomGradient />
           </button>
         </form>

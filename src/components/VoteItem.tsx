@@ -2,9 +2,8 @@ import React from 'react';
 import { Option } from "../types";
 import { BackgroundGradient } from './ui/background-gradient';
 import ImageComponent from './ImageComponent';
-import ProgressBar from './ui/ProgressBar';
+// import ProgressBar from './ui/ProgressBar';
 import { FaHeart } from "react-icons/fa";
-
 
 interface VoteItemProps {
   item: Option;
@@ -12,56 +11,40 @@ interface VoteItemProps {
   isSelected: boolean;
   isVotable: boolean;
   votesComparison: number;
-  optionVotes : number;
+  optionVotes: number;
 }
 
-const VoteItem: React.FC<VoteItemProps> = ({ item, onVote, isSelected, isVotable, votesComparison, optionVotes }) => {
-
-if(isSelected) return (
-  <BackgroundGradient className="rounded-[22px] max-w-sm  bg-white dark:bg-zinc-900">
-    <div className='flex flex-col justify-between'>
-    <div className='flex items-center gap-2 justify-end mt-4 mr-3'>
-    <FaHeart color='#EC4899' /> 
-
-    <p className='text-pink-500 '>{`${optionVotes} ${optionVotes === 1 ? 'like' : 'likes'}`} </p>
-    </div>
-    <ImageComponent src={item.url} alt={item.title || 'Option'} />
-    
-    <div className='flex h-16 mt-8'>
-    <ProgressBar votesComparison={votesComparison} optionVotes={optionVotes}  />
-
-    </div>
-
-    </div>
-    
-    </BackgroundGradient>
-)
-
-
+const VoteItem: React.FC<VoteItemProps> = ({ item, onVote, isSelected, isVotable, optionVotes }) => {
+  if (isSelected) {
+    return (
+      <BackgroundGradient className="bg-white dark:bg-zinc-900 rounded-3xl py-8">
+        <div className='flex flex-col justify-between'>
+          <div className='flex items-center gap-2 justify-end mr-4 mt-1'>
+            <FaHeart color='#EC4899' /> 
+            <p className='text-pink-500 md:text-xl lg:text-sm'>{`${optionVotes} ${optionVotes === 1 ? 'like' : 'likes'}`} </p>
+          </div>
+          <ImageComponent src={item.url} alt={item.title || 'Option'} />
+ 
+        </div>
+      </BackgroundGradient>
+    );
+  }
 
   return (
     <div
-      className={`rounded w-full md:w-1/2 cursor-pointer pt-4 
-       ${isVotable ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+      className={`w-full lg:w-1/3  ${isVotable ? 'cursor-pointer' : 'cursor-not-allowed'}`}
       onClick={() => isVotable && onVote()}
     >
-    <div className='flex flex-col justify-between'>
-    <div className='flex items-center gap-2 justify-end mt-4 mr-3'>
-    <FaHeart color='#EC4899' /> 
-
-    <p className='text-pink-500 '>{`${optionVotes} ${optionVotes === 1 ? 'like' : 'likes'}`} </p>
+      <div className='flex flex-col justify-between'>
+        <div className='flex items-center gap-2 justify-end mr-4'>
+          <FaHeart color='#EC4899' /> 
+          <p className='text-pink-500 md:text-xl lg:text-sm'>{`${optionVotes} ${optionVotes === 1 ? 'like' : 'likes'}`} </p>
+        </div>
+        <ImageComponent src={item.url} alt={item.title || 'Option'} />
+     
+      </div>
     </div>
-    <ImageComponent src={item.url} alt={item.title || 'Option'} />
-    
-    <div className='flex h-16 mt-8'>
-    <ProgressBar votesComparison={votesComparison} optionVotes={optionVotes}  />
-
-    </div>
-
-    </div>    </div>
   );
 };
 
 export default VoteItem;
-
-

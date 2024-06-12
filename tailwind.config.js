@@ -28,6 +28,10 @@ module.exports = {
           },
         },
       },
+      transitionDuration: {
+        '4000': '4000ms',
+        '5000': '5000ms',
+      },
     },
   },
   plugins: [addVariablesForColors],

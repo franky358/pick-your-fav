@@ -1,4 +1,3 @@
-// ProgressBar.tsx
 import React, { useEffect, useState } from 'react';
 
 interface ProgressBarProps {
@@ -14,12 +13,12 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ votesComparison, optionVotes 
     setPercentage(calculatedPercentage);
   }, [votesComparison, optionVotes]);
 
-  console.log(optionVotes)
+  if (!optionVotes) return null;
 
   return (
     <div className="w-full bg-gray-300 rounded-full h-2 overflow-hidden">
       <div
-        className="bg-pink-500 h-6 rounded-full transition-all duration-3000 ease-in-out"
+        className="bg-pink-500 h-2 rounded-full transition-all duration-3000 ease-in-out"
         style={{ width: `${percentage}%` }}
       ></div>
     </div>
@@ -27,4 +26,3 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ votesComparison, optionVotes 
 };
 
 export default ProgressBar;
-

@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { Option } from '../types';
 import { User } from '@supabase/supabase-js';
-import UserComparisons from '../components/UserComparison';
 import { v4 as uuidv4 } from 'uuid';
+import { ToastContainer, toast, Bounce } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Navbar from '../components/Navbar';
 
 interface UploadPageProps {
   user: User;
@@ -16,6 +18,7 @@ const UploadPage: React.FC<UploadPageProps> = ({ user }) => {
     { id: uuidv4(), title: '', url: '' },
     { id: uuidv4(), title: '', url: '' },
   ]);
+  const [loading, setLoading] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const uploadFile = async (file: File, index: number) => {
@@ -46,17 +49,24 @@ const UploadPage: React.FC<UploadPageProps> = ({ user }) => {
     const file = e.target.files ? e.target.files[0] : null;
 
     if (file) {
+      setLoading(index);
       const url = await uploadFile(file, index);
       const updatedOptions: Option[] = [...options];
       updatedOptions[index].url = url;
       setOptions(updatedOptions);
+      setLoading(null);
+      toast('Imagen subida correctamente!', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+        });
     }
-  };
-
-  const handleTitleChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const updatedOptions: Option[] = [...options];
-    updatedOptions[index].title = e.target.value;
-    setOptions(updatedOptions);
   };
 
   const handleSubmit = async () => {
@@ -98,48 +108,69 @@ const UploadPage: React.FC<UploadPageProps> = ({ user }) => {
     }
   };
 
+  const isSubmitDisabled = options.some(option => !option.url);
+
   return (
-    <div className="p-4">
-      <h2 className="text-2xl mb-4">Crear Nueva Comparación</h2>
-      <input
-        type="text"
-        placeholder="Título de la Comparación (opcional)"
-        value={comparisonTitle}
-        onChange={(e) => setComparisonTitle(e.target.value)}
-        className="mb-4 p-2 border rounded w-full"
-      />
-      <h3 className="text-xl mb-4">Agregar Opciones</h3>
+    <>
+   <ToastContainer
+      position="top-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="light"/>
+    <Navbar />
+    <div className="px-8 mt-16 mb-16 md:max-w-md md:mx-auto lg:max-w-5xl">
+      <h2 className="text-2xl mb-4 text-white mt-4 lg:mt-2 lg:text-center">Crear Nueva Comparación</h2>
+ 
+      <h3 className="text-xl mt-8 text-white lg:text-center">Agregar Imágenes</h3>
+      <div className='lg:flex lg:justify-around lg:gap-8'>
+
       {options.map((option, index) => (
-        <div key={option.id} className="mb-4">
-          <input
-            type="text"
-            placeholder={`Título de la Opción ${index + 1} (opcional)`}
-            value={option.title}
-            onChange={(e) => handleTitleChange(index, e)}
-            className="mb-2 p-2 border rounded w-full"
-          />
-          <input
-            type="file"
-            accept="image/*,video/*"
-            onChange={(e) => handleFileChange(index, e)}
-            className="mb-2 p-2 border rounded w-full"
-          />
+        <div key={option.id} className="mb-4 mt-8 lg:w-1/2 lg:flex lg:flex-col lg:items-center lg:border  lg:border-gray-100 lg:border-dashed p-8 ">
+          <label className='text-white'> Imagen {index + 1}</label>
+          <div className="relative mt-4 lg:w-1/2">
+            <input
+              type="file"
+              accept="image/*,video/*"
+              onChange={(e) => handleFileChange(index, e)}
+              className="hidden"
+              id={`file-upload-${index}`}
+              disabled={loading !== null}
+            />
+            <label
+              htmlFor={`file-upload-${index}`}
+              className={`block text-white text-center p-2 rounded cursor-pointer ${loading === index ? 'bg-gray-500' : 'bg-blue-500'}`}
+            >
+              {loading === index ? 'Subiendo...' : 'Seleccionar archivo'}
+            </label>
+          </div>
           {option.url && (
-            <div className="mb-2">
-              <img src={option.url} alt={`Opción ${index + 1}`} className="w-full h-auto" />
+            <div className="w-full max-w-xs mx-auto lg:mx-0 mt-4">
+              <img src={option.url} alt={`Opción ${index + 1}`} className="object-contain w-full h-60 md:h-72" />
             </div>
           )}
         </div>
       ))}
-      <button
+      </div>
+      <div className='w-full flex justify-center'>  
+         <button
         onClick={handleSubmit}
-        className="bg-green-500 text-white p-2 rounded w-full"
+        className={`p-2 mt-16 rounded w-full lg:w-96   ${isSubmitDisabled ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 text-white'}`}
+        disabled={isSubmitDisabled}
       >
         Crear Comparación
       </button>
 
-      <UserComparisons userId={user.id} />
+      </div>
+   
+      {/* <UserComparisons userId={user.id} /> */}
     </div>
+    </>
   );
 };
 

@@ -1,32 +1,21 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
 import { User } from '@supabase/supabase-js';
-import { supabase } from '../supabaseClient';
 import VotingPanel from '../components/VotingPanel';
 import Header from '../components/Header';
-
+import Navbar from '../components/Navbar';
 
 interface HomePageProps {
   user: User;
 }
 
 const HomePage: React.FC<HomePageProps> = ({ user }) => {
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error logging out:", error);
-    } else {
-      navigate('/');
-    }
-  };
 
 
   return (
-
-    <div className='bg-black'>
+  <>
+      <Navbar />
+      <div className='bg-black'>
       <Header />
       <motion.div
         initial={{ opacity: 0.0, y: 40 }}
@@ -44,19 +33,9 @@ const HomePage: React.FC<HomePageProps> = ({ user }) => {
       </main>
       </motion.div>
 
-      {/* <button
-          onClick={() => navigate('/upload')}
-          className="bg-blue-500 text-white p-2 rounded mt-4"
-        >
-          Crear Nueva Comparación
-        </button>
-      <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white p-2 rounded"
-          >
-            Cerrar Sesión
-      </button> */}
     </div>
+  </>
+
      
   );
 };

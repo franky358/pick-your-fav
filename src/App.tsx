@@ -10,10 +10,7 @@ import HomePage from './pages/HomePage';
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isEmailConfirmed, setIsEmailConfirmed] = useState<boolean | null>(null);
-  const darkMode= true;
-
-  console.log(user);
-  console.log(isEmailConfirmed)
+  const darkMode = true;
 
   useEffect(() => {
     const getSession = async () => {
@@ -26,8 +23,6 @@ function App() {
         setIsEmailConfirmed(user?.email_confirmed_at ? true : false);
       }
     };
-
-    
 
     getSession();
 
@@ -57,7 +52,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={user && isEmailConfirmed ? <HomePage user={user} />: <Navigate to="/login" />} />
+        <Route path="/" element={user && isEmailConfirmed ? <HomePage user={user} /> : <Navigate to="/login" />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/upload" element={user && isEmailConfirmed ? <UploadPage user={user} /> : <Navigate to="/login" />} />
